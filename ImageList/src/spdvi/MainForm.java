@@ -4,6 +4,7 @@
  */
 package spdvi;
 
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.ListModel;
 
 /**
@@ -88,23 +90,50 @@ public class MainForm extends javax.swing.JFrame {
 
     private void lstImagesValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_lstImagesValueChanged
             // TODO add your handling code here:
-            
+            String fileName = lstImages.getSelectedValue();
+            try{
+            BufferedImage bufferedImage =ImageIO.read(new File("src/spdvi/images/" + fileName));
+            ImageIcon icon = resizeImageIcon(bufferedImage,lblImages.getWidth(),lblImages.getHeight());
+            lblImages.setIcon(icon);}
+            catch(IOException ioe)
+            {
+                ioe.printStackTrace();
+            }
+          
     }//GEN-LAST:event_lstImagesValueChanged
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         // TODO add your handling code here:
-        try {
-            BufferedImage image = null;
-            image= ImageIO.read(new File("src/spdvi/images/img1.jpeg"));
-            DefaultListModel<BufferedImage> images = new DefaultListModel<BufferedImage>();
-            images.addElement(image);
-            lstImages.setModel(images); 
-            
-        } catch (IOException ex) {
-            Logger.getLogger(MainForm.class.getName()).log(Level.SEVERE, null, ex);
-        }
+       File imagesFolder = new File("src/spdvi/images/");
+       File[] imageFiles = imagesFolder.listFiles();
+       DefaultListModel imagesListModel = new DefaultListModel();
+       for(File f: imageFiles) {
+           imagesListModel.addElement(f.getName());
+       }
+       lstImages.setModel(imagesListModel);
     }//GEN-LAST:event_formWindowOpened
 
+      private ImageIcon resizeImageIcon(BufferedImage originalImage, int desiredWidth, int desiredHeight){
+            int newHeight = 0;
+            int newWidth = 0;
+            
+            float aspectRatio= (float)originalImage.getWidth() / originalImage.getHeight();
+            if (originalImage.getWidth() > originalImage.getHeight())
+            {
+                newWidth = desiredWidth;
+                newHeight = Math.round(desiredWidth / aspectRatio);
+            }
+            else
+            {
+                newHeight = desiredHeight;
+                newWidth = Math.round(desiredHeight * aspectRatio);}
+                 
+            Image resultingImage = originalImage.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+            BufferedImage outputImage = new BufferedImage(newWidth, newHeight,BufferedImage.TYPE_INT_RGB);
+            outputImage.getGraphics().drawImage(resultingImage, 0, 0 ,null);
+            ImageIcon imageIcon = new ImageIcon(outputImage);
+            return imageIcon;    
+    }
     /**
      * @param args the command line arguments
      */
